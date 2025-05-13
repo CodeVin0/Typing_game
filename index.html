@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Test</title>
+  <style>
+    :root {
+      /* Base colors */
+      --bg-primary: #050520;
+      --text-primary: #e0e0ff;
+      --accent-color: #00ccff;
+      --accent-secondary: #ff00aa;
+      --accent-tertiary: #7700ff;
+      --error-color: #ff3366;
+      --success-color: #00ffaa;
+      --muted-color: #8888aa;
+      --cursor-color: #00ccff;
+      --neon-glow: 0 0 10px var(--accent-color), 0 0 20px var(--accent-color);
+      --neon-glow-error: 0 0 10px var(--error-color), 0 0 20px var(--error-color);
+    }
+
+    /* Theme variations */
+    .theme-cyber {
+      --bg-primary: #050520;
+      --text-primary: #e0e0ff;
+      --accent-color: #00ccff;
+      --accent-secondary: #ff00aa;
+      --accent-tertiary: #7700ff;
+      --cursor-color: #00ccff;
+    }
+
+    .theme-neon {
+      --bg-primary: #0a0a0a;
+      --text-primary: #ffffff;
+      --accent-color: #00ff00;
+      --accent-secondary: #ffff00;
+      --accent-tertiary: #ff00ff;
+      --cursor-color: #00ff00;
+    }
+
+    .theme-synthwave {
+      --bg-primary: #1a0033;
+      --text-primary: #f0f0ff;
+      --accent-color: #ff00aa;
+      --accent-secondary: #00ccff;
+      --accent-tertiary: #ffcc00;
+      --cursor-color: #ff00aa;
+    }
+
+    .theme-future {
+      --bg-primary: #000a1a;
+      --text-primary: #d0e0ff;
+      --accent-color: #00aaff;
+      --accent-secondary: #ff3366;
+      --accent-tertiary: #00ffcc;
+      --cursor-color: #00aaff;
+    }
+
+    .theme-matrix {
+      --bg-primary: #000a00;
+      --text-primary: #00ff00;
+      --accent-color: #00cc00;
+      --accent-secondary: #88ff88;
+      --accent-tertiary: #00aa00;
+      --cursor-color: #00ff00;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Courier New', monospace;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      transition: background-color 0.5s ease;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(0, 204, 255, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(255, 0, 170, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 50% 50%, rgba(119, 0, 255, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 800px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .title {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--accent-color);
+      text-shadow: var(--neon-glow);
+      animation: pulse 4s infinite alternate;
+    }
+
+    .typing-area {
+      width: 100%;
+      min-height: 200px;
+      margin-bottom: 2rem;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1.5rem;
+      background: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(4px);
+      overflow: hidden;
+    }
+
+    .typing-area::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, 
+        var(--accent-color), 
+        transparent, 
+        var(--accent-secondary), 
+        transparent, 
+        var(--accent-tertiary));
+      z-index: -1;
+      border-radius: 10px;
+      animation: borderGlow 10s linear infinite;
+      opacity: 0.5;
+    }
+
+    .text-display {
+      font-size: 1.25rem;
+      line-height: 1.8;
+      position: relative;
+      color: var(--muted-color);
+      white-space: pre-wrap;
+    }
+
+    .cursor {
+      position: absolute;
+      width: 2px;
+      background-color: var(--cursor-color);
+      box-shadow: var(--neon-glow);
+      animation: blink 1s infinite;
+      z-index: 10;
+      transition: all 0.05s ease;
+    }
+
+    .char {
+      position: relative;
+      display: inline-block;
+      transition: color 0.1s ease;
+    }
+
+    .char.correct {
+      color: var(--text-primary);
+    }
+
+    .char.incorrect {
+      color: var(--error-color);
+      text-shadow: var(--neon-glow-error);
+    }
+
+    .char.current {
+      color: var(--accent-color);
+      text-shadow: var(--neon-glow);
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      min-width: 120px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: var(--muted-color);
+      margin-bottom: 0.5rem;
+      letter-spacing: 1px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--accent-color);
+      text-shadow: var(--neon-glow);
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      background: transparent;
+      color: var(--accent-color);
+      border: 1px solid var(--accent-color);
+      padding: 0.5rem 1.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      background-color: rgba(0, 204, 255, 0.1);
+      box-shadow: var(--neon-glow);
+    }
+
+    .btn:active {
+      transform: translateY(2px);
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      transition: 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .theme-selector {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 100;
+    }
+
+    .theme-btn {
+      background: transparent;
+      color: var(--muted-color);
+      border: none;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      padding: 0.3rem 0.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .theme-btn:hover {
+      color: var(--accent-color);
+    }
+
+    .theme-options {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 0.5rem;
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      padding: 0.5rem;
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      backdrop-filter: blur(10px);
+      min-width: 120px;
+    }
+
+    .theme-options.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .theme-option {
+      padding: 0.3rem 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 2px;
+    }
+
+    .theme-option:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .results {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: var(--bg-primary);
+      z-index: 20;
+      padding: 2rem;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .results.show {
+      display: flex;
+    }
+
+    .result-title {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      color: var(--accent-color);
+      text-shadow: var(--neon-glow);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .result-stats {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .result-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .result-stat-label {
+      font-size: 1rem;
+      text-transform: uppercase;
+      color: var(--muted-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .result-stat-value {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--accent-color);
+      text-shadow: var(--neon-glow);
+    }
+
+    .grid-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(0, 204, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 204, 255, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Animations */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.8; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes borderGlow {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 300% 0%; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .title {
+        font-size: 1.8rem;
+      }
+      
+      .text-display {
+        font-size: 1rem;
+      }
+      
+      .stat {
+        min-width: 90px;
+        padding: 0.8rem;
+      }
+      
+      .stat-value {
+        font-size: 1.5rem;
+      }
+      
+      .result-stat-value {
+        font-size: 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="theme-cyber">
+  <div class="grid-bg"></div>
+  
+  <div class="container">
+    <h1 class="title">Typing Test</h1>
+    
+    <div class="typing-area">
+      <div class="cursor"></div>
+      <div class="text-display" id="text-display"></div>
+    </div>
+    
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">WPM</div>
+        <div class="stat-value" id="wpm">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Accuracy</div>
+        <div class="stat-value" id="accuracy">100%</div>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <button class="btn" id="reset-btn">Reset</button>
+    </div>
+    
+    <div class="theme-selector">
+      <button class="theme-btn" id="theme-btn">Theme</button>
+      <div class="theme-options" id="theme-options">
+        <div class="theme-option" data-theme="cyber">Cyber</div>
+        <div class="theme-option" data-theme="neon">Neon</div>
+        <div class="theme-option" data-theme="synthwave">Synthwave</div>
+        <div class="theme-option" data-theme="future">Future</div>
+        <div class="theme-option" data-theme="matrix">Matrix</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="results" id="results">
+    <h2 class="result-title">Results</h2>
+    <div class="result-stats">
+      <div class="result-stat">
+        <div class="result-stat-label">WPM</div>
+        <div class="result-stat-value" id="result-wpm">0</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-stat-label">Accuracy</div>
+        <div class="result-stat-value" id="result-accuracy">100%</div>
+      </div>
+    </div>
+    <button class="btn" id="restart-btn">Try Again</button>
+  </div>
+
+  <script>
+    // Quotes for typing test
+    const quotes = [
+      " The sciences, each straining in its own direction, have hitherto harmed us little; but some day the piecing together of dissociated knowledge will open up such terrifying vistas of reality.",
+      
+      " It might seem that I am exaggerating, though no one with imagination and the slightest knowledge of irony could have failed to note the preposterous claims of progress and improvement.",
+      
+      " Nobody realizes that some people expend tremendous energy merely to be normal. In a time of universal deceit, telling the truth is a revolutionary act.",
+      
+      " The most merciful thing in the world, I think, is the inability of the human mind to correlate all its contents. We live on a placid island of ignorance in the midst of black seas of infinity.",
+      
+      " For a moment, nothing happened. Then, after a second or so, nothing continued to happen. The ships hung in the sky in much the same way that bricks don't.",
+      
+      " It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
+      
+      " All happy families are alike; each unhappy family is unhappy in its own way. He stepped down, trying not to look long at her, as if she were the sun.",
+      
+      " It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity.",
+      
+      " In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since.",
+      
+      " Many years later, as he faced the firing squad, Colonel Aureliano Buendia was to remember that distant afternoon when his father took him to discover ice."
+    ];
+
+    // DOM Elements
+    const textDisplay = document.getElementById('text-display');
+    const wpmDisplay = document.getElementById('wpm');
+    const accuracyDisplay = document.getElementById('accuracy');
+    const resetBtn = document.getElementById('reset-btn');
+    const themeBtn = document.getElementById('theme-btn');
+    const themeOptions = document.getElementById('theme-options');
+    const resultsScreen = document.getElementById('results');
+    const resultWpm = document.getElementById('result-wpm');
+    const resultAccuracy = document.getElementById('result-accuracy');
+    const restartBtn = document.getElementById('restart-btn');
+    const cursor = document.querySelector('.cursor');
+
+    // Game state
+    let currentQuote = '';
+    let userInput = '';
+    let startTime = null;
+    let endTime = null;
+    let wpm = 0;
+    let accuracy = 100;
+    let isFinished = false;
+    let isStarted = false;
+    let currentPosition = 0;
+    let wpmInterval = null;
+
+    // Initialize the game
+    function initGame() {
+      // Get a random quote
+      currentQuote = getRandomQuote();
+      
+      // Reset game state
+      userInput = '';
+      startTime = null;
+      endTime = null;
+      wpm = 0;
+      accuracy = 100;
+      isFinished = false;
+      isStarted = false;
+      currentPosition = 0;
+      
+      // Clear any existing interval
+      if (wpmInterval) {
+        clearInterval(wpmInterval);
+        wpmInterval = null;
+      }
+      
+      // Update displays
+      wpmDisplay.textContent = '0';
+      accuracyDisplay.textContent = '100%';
+      
+      // Hide results screen
+      resultsScreen.classList.remove('show');
+      
+      // Render the quote
+      renderText();
+      
+      // Position cursor at the beginning
+      positionCursor();
+    }
+
+    // Get a random quote
+    function getRandomQuote() {
+      const randomIndex = Math.floor(Math.random() * quotes.length);
+      return quotes[randomIndex];
+    }
+
+    // Render the text with appropriate styling
+    function renderText() {
+      textDisplay.innerHTML = '';
+      
+      for (let i = 0; i < currentQuote.length; i++) {
+        const charSpan = document.createElement('span');
+        charSpan.textContent = currentQuote[i];
+        charSpan.className = 'char';
+        charSpan.dataset.index = i;
+        
+        if (i < userInput.length) {
+          if (userInput[i] === currentQuote[i]) {
+            charSpan.classList.add('correct');
+          } else {
+            charSpan.classList.add('incorrect');
+          }
+        } else if (i === userInput.length) {
+          charSpan.classList.add('current');
+        }
+        
+        textDisplay.appendChild(charSpan);
+      }
+    }
+
+    // Position the cursor
+    function positionCursor() {
+      const currentChar = textDisplay.querySelector(`[data-index="${currentPosition}"]`);
+      
+      if (currentChar) {
+        const rect = currentChar.getBoundingClientRect();
+        const containerRect = textDisplay.getBoundingClientRect();
+        
+        cursor.style.left = (rect.left - containerRect.left) + 'px';
+        cursor.style.top = (rect.top - containerRect.top) + 'px';
+        cursor.style.height = rect.height + 'px';
+      } else if (currentPosition >= currentQuote.length) {
+        // If we're at the end of the quote, position cursor after the last character
+        const lastChar = textDisplay.querySelector(`[data-index="${currentQuote.length - 1}"]`);
+        if (lastChar) {
+          const rect = lastChar.getBoundingClientRect();
+          const containerRect = textDisplay.getBoundingClientRect();
+          
+          cursor.style.left = (rect.right - containerRect.left) + 'px';
+          cursor.style.top = (rect.top - containerRect.top) + 'px';
+          cursor.style.height = rect.height + 'px';
+        }
+      }
+    }
+
+    // Calculate WPM
+    function calculateWPM() {
+      if (!startTime || !isStarted) return 0;
+      
+      const timeInMinutes = (Date.now() - startTime) / 60000;
+      const wordCount = userInput.length / 5; // standard: 5 chars = 1 word
+      
+      if (timeInMinutes === 0) return 0;
+      return Math.round(wordCount / timeInMinutes);
+    }
+
+    // Update WPM display
+    function updateWPM() {
+      const currentWPM = calculateWPM();
+      wpmDisplay.textContent = currentWPM;
+      return currentWPM;
+    }
+
+    // Calculate accuracy
+    function calculateAccuracy() {
+      if (userInput.length === 0) return 100;
+      
+      let correctChars = 0;
+      for (let i = 0; i < userInput.length; i++) {
+        if (i < currentQuote.length && userInput[i] === currentQuote[i]) {
+          correctChars++;
+        }
+      }
+      
+      return Math.floor((correctChars / userInput.length) * 100);
+    }
+
+    // Update accuracy display
+    function updateAccuracy() {
+      const currentAccuracy = calculateAccuracy();
+      accuracyDisplay.textContent = currentAccuracy + '%';
+      return currentAccuracy;
+    }
+
+    // Handle keyboard input
+    function handleKeyDown(e) {
+      // Ignore modifier keys and special keys
+      if (
+        e.ctrlKey ||
+        e.altKey ||
+        e.metaKey ||
+        e.key === 'Shift' ||
+        e.key === 'Control' ||
+        e.key === 'Alt' ||
+        e.key === 'Meta' ||
+        e.key === 'Tab' ||
+        e.key === 'CapsLock' ||
+        e.key === 'Escape'
+      ) {
+        return;
+      }
+      
+      // Start timer on first keystroke
+      if (!isStarted && !startTime) {
+        startTime = Date.now();
+        isStarted = true;
+        
+        // Start WPM interval
+        wpmInterval = setInterval(() => {
+          updateWPM();
+        }, 1000);
+      }
+      
+      // Handle backspace
+      if (e.key === 'Backspace' && currentPosition > 0) {
+        e.preventDefault();
+        currentPosition--;
+        userInput = userInput.slice(0, -1);
+        renderText();
+        positionCursor();
+        updateAccuracy();
+        return;
+      }
+      
+      // Ignore if we're at the end of the quote
+      if (currentPosition >= currentQuote.length) {
+        return;
+      }
+      
+      // Handle character input
+      if (e.key.length === 1) {
+        const newUserInput = userInput + e.key;
+        userInput = newUserInput;
+        currentPosition++;
+        
+        renderText();
+        positionCursor();
+        updateAccuracy();
+        
+        // Check if quote is completed
+        if (newUserInput === currentQuote || currentPosition >= currentQuote.length) {
+          endTime = Date.now();
+          isFinished = true;
+          
+          // Set final WPM and accuracy
+          const finalWPM = updateWPM();
+          const finalAccuracy = updateAccuracy();
+          
+          // Clear interval
+          if (wpmInterval) {
+            clearInterval(wpmInterval);
+            wpmInterval = null;
+          }
+          
+          // Show results
+          showResults(finalWPM, finalAccuracy);
+        }
+      }
+    }
+
+    // Show results screen
+    function showResults(finalWPM, finalAccuracy) {
+      resultWpm.textContent = finalWPM;
+      resultAccuracy.textContent = finalAccuracy + '%';
+      resultsScreen.classList.add('show');
+    }
+
+    // Event listeners
+    resetBtn.addEventListener('click', initGame);
+    restartBtn.addEventListener('click', initGame);
+    
+    // Theme selector
+    themeBtn.addEventListener('click', () => {
+      themeOptions.classList.toggle('show');
+    });
+    
+    // Theme options
+    document.querySelectorAll('.theme-option').forEach(option => {
+      option.addEventListener('click', () => {
+        const theme = option.dataset.theme;
+        document.body.className = `theme-${theme}`;
+        themeOptions.classList.remove('show');
+      });
+    });
+    
+    // Close theme options when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.theme-selector')) {
+        themeOptions.classList.remove('show');
+      }
+    });
+    
+    // Keyboard event listener
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Auto-start the game
+    window.addEventListener('load', () => {
+      initGame();
+      
+      // Auto-focus the typing area
+      document.body.focus();
+      
+      // Simulate a keypress after a short delay to auto-start
+      setTimeout(() => {
+        // Create a fake keydown event for the first character
+        const firstChar = currentQuote.charAt(0);
+        const fakeEvent = new KeyboardEvent('keydown', {
+          key: firstChar,
+          bubbles: true,
+          cancelable: true
+        });
+        document.dispatchEvent(fakeEvent);
+      }, 1000);
+    });
+    
+    // Window resize event to reposition cursor
+    window.addEventListener('resize', positionCursor);
+  </script>
+</body>
+</html>
